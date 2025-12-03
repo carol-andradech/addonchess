@@ -19,7 +19,7 @@
 
   // Coloque aqui a URL base onde seus áudios estão hospedados.
   // Exemplo: "https://meu-servidor.com/audios/" ou "https://raw.githubusercontent.com/..."
-  const AUDIO_BASE = "http://localhost:8000/";
+  const AUDIO_BASE = "C:UsersCarolDownloadsaddonchessaudios";
 
   function fileUrl(name) {
     // monta "https://.../peao.mp3" ou "https://.../e4.mp3"
