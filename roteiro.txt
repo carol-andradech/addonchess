@@ -1,3 +1,7 @@
+Roteiro dos 77 áudios. Gravar utilizando o audacity. Uma faixa com todas as partes sendo ditas com mais ou menos 1s de espaço. Para que depois eu possa usar a ferramenta de separar a faixa em audios individuais, ignorando as partes sem som da pausa.
+Dessa forma terei 77 audios. Mas preciso que os arquivos de audio tenham o mesmo nome que está no meu código. 
+Os arquivos de audio gerado segue o padrão: "prefixo" + número
+Então fiz em python um código onde informo o prefixo (q será diferente para gravação de pessoas diferentes). Como eu li as palavras em determinada ordem, eu renomeio os arquivos de audio exatamente com o nome que preciso no script.
 a1
 a2
 a3
