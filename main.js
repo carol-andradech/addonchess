@@ -14,7 +14,7 @@
 
   console.log("[d4-test] script carregado");
 
-  // link RAW do GitHub (que você já viu que baixa o mp3)
+  // link RAW do GitHub (que você já viu que baixa o mp3) aa
   const AUDIO_URL =
     "https://raw.githubusercontent.com/carol-andradech/addonchess/main/audios/d4.mp3";
 
