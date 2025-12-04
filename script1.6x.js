@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Chess.com - Áudio natural (sem "peão" desnecessário)
+// @name         Chess.com - Áudio natural (velocidade 1.6x, sem "peão" desnecessário)
 // @namespace    http://tampermonkey.net/
-// @version      3.1
-// @description  Narra lances no Chess.com com áudios personalizados, detectando figurines corretamente
+// @version      3.2
+// @description  Narra lances no Chess.com com áudios personalizados de forma natural e rápida
 // @match        https://www.chess.com/analysis*
 // @match        https://www.chess.com/pt-BR/analysis*
 // @run-at       document-end
@@ -47,8 +47,11 @@
 
     function playNext() {
       if (index >= files.length) return;
+
       const url = AUDIO_BASE + files[index++];
       const audio = new Audio(url);
+
+      audio.playbackRate = 1.6; // ⚡ fala mais rápido (40%)
 
       console.log("[chess-audio] tocando:", url);
 
@@ -70,12 +73,8 @@
     // --------------------------
     // ROQUE
     // --------------------------
-    if (san === "O-O") {
-      return [ACTION_AUDIO.castle_short];
-    }
-    if (san === "O-O-O") {
-      return [ACTION_AUDIO.castle_long];
-    }
+    if (san === "O-O") return [ACTION_AUDIO.castle_short];
+    if (san === "O-O-O") return [ACTION_AUDIO.castle_long];
 
     // --------------------------
     // CHEQUE / MATE
@@ -102,27 +101,28 @@
     }
 
     const isCapture = san.includes("x");
+    const isEnPassant = san.includes("e.p.") || san.includes("ep");
 
     // --------------------------
-    // DETECTAR FIGURINE DO CHESS.COM
+    // DETECTAR FIGURINE (icone)
     // --------------------------
     let pieceLetter = null;
     let rest = san;
 
     const figurineEl = spanEl.querySelector("[data-figurine]");
     if (figurineEl) {
-      pieceLetter = figurineEl.getAttribute("data-figurine");
+      pieceLetter = figurineEl.getAttribute("data-figurine"); // K,Q,R,B,N
     }
 
     // --------------------------
-    // SAN normal (se não tiver figurine)
+    // SAN normal (se sem figurine)
     // --------------------------
     if (!pieceLetter) {
       if (/^[KQRBN]/.test(san[0])) {
         pieceLetter = san[0];
         rest = san.slice(1);
       } else if (/^[a-h]/.test(san[0]) && !/[KQRBN]/.test(san)) {
-        pieceLetter = "P";
+        pieceLetter = "P"; // peão simples, mas NÃO falar
       }
     }
 
@@ -132,17 +132,17 @@
     const squareMatch = rest.match(/([a-h][1-8])$/);
     const square = squareMatch ? squareMatch[1] : null;
 
-    // Detectar en passant
-    const isEnPassant = san.includes("e.p.") || san.includes("ep");
+    // --------------------------
+    // TIPO DE PEÃO
+    // --------------------------
+    const isPawnSimpleMove =
+      pieceLetter === "P" && !isCapture && !promoPiece && !isEnPassant;
 
     // --------------------------
     // MONTAR ÁUDIO
     // --------------------------
 
-    // Peão simples → não fala "peão"
-    const isPawnSimpleMove = pieceLetter === "P" && !isCapture && !promoPiece;
-
-    // 1) Nome da peça (mas NUNCA falar "peão" antes da captura)
+    // 1) Nome da peça (exceto peão simples, ou peão captura dupla)
     if (
       pieceLetter &&
       PIECE_AUDIO[pieceLetter] &&
@@ -154,9 +154,7 @@
 
     // 2) Captura
     if (isCapture) {
-      if (pieceLetter === "P") {
-        files.push(PIECE_AUDIO["P"]); // UMA VEZ apenas
-      }
+      if (pieceLetter === "P") files.push(PIECE_AUDIO["P"]); // uma vez só
       files.push(ACTION_AUDIO.capture);
     }
 
@@ -177,17 +175,14 @@
     }
 
     // 6) Xeque / Mate
-    if (mate) {
-      files.push(ACTION_AUDIO.mate);
-    } else if (check) {
-      files.push(ACTION_AUDIO.check);
-    }
+    if (mate) files.push(ACTION_AUDIO.mate);
+    else if (check) files.push(ACTION_AUDIO.check);
 
     return files;
   }
 
   // =====================================================
-  // DETECTAR MOVIMENTO ATUAL
+  // DETECTAR MUDANÇA DE LANCE
   // =====================================================
   function getSelectedSpan() {
     return document.querySelector(
